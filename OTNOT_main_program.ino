@@ -60,8 +60,8 @@ void readSensors(){
 double getPosition(){
     int i, cont = 0;
     double pos = 0.0;
-    for (i = 0; i < 7; i++){
-        if (i != 0 && i!= 1 && lineSensors[i] == 1){
+    for (i = 2; i < 7; i++){
+        if (lineSensors[i] == 0){
             pos += i;
             cont += 1;
         }
