@@ -22,13 +22,19 @@ double P = 0.0,  // parte Proporcional
        I = 0.0,  // parte Integral
        D = 0.0;  // parte Derivativa
 
+double PID = 0.0;
+
 double kP = 1.0,  // constante Proporcional
        kI = 0.0,  // constante Integral 
        kD = 0.0;  // constante Diferencial
 
 double pos = 0.0; // posição relativa do seguidor
 
-double err = 0.0; // erro com relação ao 
+double lastPos = 0.0; // posicao anterior relativa dos sensores 
+
+double err = 0.0; // erro com relação a posicao inicial
+
+long lastTime = 0;
 
 void setup() {
   pinMode(PWMB, OUTPUT);
@@ -79,15 +85,38 @@ void moverMotor(char side, int speed){
     else if(side == 'b'){
          digitalWrite(BIN1, HIGH);
          digitalWrite(BIN2, LOW);
-         analogWrite(PWMA, speed);
+         analogWrite(PWMB, speed);
     }
 }
 
 void controlaMotor(double PID){
+    int controle = PID;
+    if (PID == 0.0){
+         moverMotor('a', 150);
+         moverMotor('b', 150);
+    }
     
+    else if(PID > 0.0){
+        moverMotor('b', 150 + controle);
+    }
+    
+    else{
+        moverMotor('a', 150 - controle);
+    }
 }
 
 void loop() {
     digitalWrite(STBY, HIGH);
-  
+    readSensors();
+    pos = getPosition();
+    err = pos - setPoint;
+    float deltaTime = (millis() - lastTime)/1000.0;
+    lastTime = millis();
+    P = kP*err;
+    I += kI*err;
+    
+    D = (lastPos - pos)*kD/deltaTime; 
+    lastPos = pos;
+    PID = P + I + D;
+    controlaMotor(PID);
 }
